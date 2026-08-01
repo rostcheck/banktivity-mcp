@@ -2,8 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Track constructor calls and mock instance
 let constructorCalls: Array<{ path: string; options: { readonly: boolean } }> = [];
+const mockPkRows = [
+  { Z_NAME: "Account", Z_ENT: 1 },
+  { Z_NAME: "Category", Z_ENT: 2 },
+  { Z_NAME: "PrimaryAccount", Z_ENT: 3 },
+  { Z_NAME: "LineItem", Z_ENT: 19 },
+  { Z_NAME: "Tag", Z_ENT: 47 },
+  { Z_NAME: "Transaction", Z_ENT: 53 },
+  { Z_NAME: "TransactionTemplate", Z_ENT: 54 },
+];
 const mockStatement = {
   get: vi.fn(),
+  all: vi.fn().mockReturnValue(mockPkRows),
 };
 const mockDbInstance = {
   prepare: vi.fn().mockReturnValue(mockStatement),
@@ -30,6 +40,7 @@ describe("DatabaseConnection", () => {
   beforeEach(() => {
     constructorCalls = [];
     mockStatement.get.mockReset();
+    mockStatement.all.mockReset().mockReturnValue(mockPkRows);
     mockDbInstance.close.mockReset();
     mockDbInstance.pragma.mockReset();
     connection = new DatabaseConnection("/path/to/file.bank8");

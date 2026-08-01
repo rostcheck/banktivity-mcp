@@ -58,7 +58,7 @@ describe("Bug 1: Z1_PACCOUNT set on line item INSERT", () => {
     db = createTestDatabase();
     testData = seedTestDatabase(db);
     const connection = createMockConnection(db);
-    lineItemRepo = new LineItemRepository(db);
+    lineItemRepo = new LineItemRepository(db, connection.entityTypes, connection.tagJunctionColumn);
     transactionRepo = new TransactionRepository(connection as any, lineItemRepo);
   });
 
@@ -211,11 +211,11 @@ describe("Bug 2: Z_PRIMARYKEY counter updated after inserts", () => {
     db = createTestDatabase();
     testData = seedTestDatabase(db);
     const connection = createMockConnection(db);
-    lineItemRepo = new LineItemRepository(db);
+    lineItemRepo = new LineItemRepository(db, connection.entityTypes, connection.tagJunctionColumn);
     transactionRepo = new TransactionRepository(connection as any, lineItemRepo);
     accountRepo = new AccountRepository(connection as any);
-    tagRepo = new TagRepository(db);
-    templateRepo = new TransactionTemplateRepository(db);
+    tagRepo = new TagRepository(db, connection.entityTypes, connection.tagJunctionColumn);
+    templateRepo = new TransactionTemplateRepository(db, connection.entityTypes, connection.tagJunctionColumn);
   });
 
   afterEach(() => {

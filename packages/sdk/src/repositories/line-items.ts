@@ -1,6 +1,5 @@
 import { BaseRepository } from "./base.js";
 import { LineItem, UpdateLineItemInput } from "../types.js";
-import { Z_ENT } from "../constants.js";
 import { nowAsCoreData } from "../utils/date.js";
 import { generateUUID } from "../utils/uuid.js";
 
@@ -140,7 +139,7 @@ export class LineItemRepository extends BaseRepository {
     const result = this.db
       .prepare(sql)
       .run(
-        Z_ENT.LINEITEM,
+        this.entityTypes.LineItem,
         accountId,
         transactionId,
         now,

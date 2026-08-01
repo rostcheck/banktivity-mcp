@@ -1,12 +1,23 @@
 import Database from "better-sqlite3";
 import { nowAsCoreData } from "../utils/date.js";
 import { buildUpdateClauses } from "../utils/sql-builder.js";
+import { EntityTypes } from "../connection.js";
 
 /**
  * Base repository with common CRUD patterns
  */
 export abstract class BaseRepository {
-  constructor(protected db: Database.Database) {}
+  protected entityTypes: EntityTypes;
+  protected tagJunctionColumn: string;
+
+  constructor(
+    protected db: Database.Database,
+    entityTypes: EntityTypes,
+    tagJunctionColumn: string
+  ) {
+    this.entityTypes = entityTypes;
+    this.tagJunctionColumn = tagJunctionColumn;
+  }
 
   /**
    * Build and execute a dynamic UPDATE query

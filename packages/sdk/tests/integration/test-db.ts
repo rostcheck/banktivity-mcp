@@ -214,18 +214,28 @@ export function seedTestDatabase(db: Database.Database): TestData {
   // Seed the Core Data primary-key counter table.
   // Each entity row tracks the highest Z_PK used so Banktivity can allocate
   // new IDs and validate the database on open.
-  const pkEntities = [
-    "Account",
-    "LineItem",
-    "Transaction",
-    "Tag",
-    "TransactionTemplate",
+  // We use the Z_ENT values from constants.ts (originally designed for Bank8)
+  // since the test schema uses those throughout.
+  const pkEntities: Array<[string, number]> = [
+    ["Account", 1],
+    ["Category", 2],
+    ["PrimaryAccount", 3],
+    ["LineItem", 19],
+    ["LineItemTemplate", 21],
+    ["RecurringTransaction", 35],
+    ["Tag", 47],
+    ["TemplateSelector", 48],
+    ["ImportSourceTemplateSelector", 49],
+    ["ScheduledTemplateSelector", 52],
+    ["Transaction", 53],
+    ["TransactionTemplate", 54],
+    ["TransactionType", 55],
   ];
   const insertPk = db.prepare(
-    `INSERT INTO Z_PRIMARYKEY (Z_NAME, Z_SUPER, Z_MAX) VALUES (?, 0, 0)`
+    `INSERT INTO Z_PRIMARYKEY (Z_ENT, Z_NAME, Z_SUPER, Z_MAX) VALUES (?, ?, 0, 0)`
   );
-  for (const name of pkEntities) {
-    insertPk.run(name);
+  for (const [name, ent] of pkEntities) {
+    insertPk.run(ent, name);
   }
 
   // Insert default currency
@@ -306,8 +316,17 @@ export interface TestData {
  * Create a mock DatabaseConnection-like object for testing
  */
 export function createMockConnection(db: Database.Database) {
+  // Load entity types from Z_PRIMARYKEY (same as DatabaseConnection does)
+  const rows = db
+    .prepare(`SELECT Z_NAME, Z_ENT FROM Z_PRIMARYKEY`)
+    .all() as Array<{ Z_NAME: string; Z_ENT: number }>;
+  const entityTypes = Object.fromEntries(rows.map((r) => [r.Z_NAME, r.Z_ENT]));
+  const tagJunctionColumn = `Z_${entityTypes.Tag}PTAGS`;
+
   return {
     instance: db,
+    entityTypes,
+    tagJunctionColumn,
     close: () => db.close(),
     getDefaultCurrencyId: () => {
       const row = db.prepare("SELECT Z_PK as id FROM ZCURRENCY LIMIT 1").get() as { id: number } | undefined;
